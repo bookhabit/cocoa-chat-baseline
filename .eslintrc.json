@@ -1,3 +1,30 @@
 {
-  "extends": ["next/core-web-vitals", "next/typescript"]
+  "parser": "@typescript-eslint/parser",
+  // TypeScript 구문을 분석
+
+  "parserOptions": {
+    "project": "./tsconfig.json"
+    // "project" 옵션에 "./tsconfig.json" 파일을 지정
+  },
+
+  "plugins": ["@typescript-eslint"],
+
+  "extends": [
+    "next/core-web-vitals",
+    // 기존 디폴트 extends
+
+    "plugin:@typescript-eslint/recommended",
+    // 기본 권장 규칙
+
+    "plugin:@typescript-eslint/recommended-requiring-type-checking",
+    // 좀 더 엄격(?)한 권장 추가 규칙
+
+    "prettier"
+    // eslint 충돌 방지
+  ],
+
+  "rules": {
+    "react/react-in-jsx-scope": "off", // nextjs와 충돌 방지 룰 (react import 안해도됨 => 불필요한 경고 방지)
+    "react/jsx-props-no-spreading": "off" // nextjs와 충돌 방지 룰 (props 스프레딩 사용시 경고 발생 방지)
+  }
 }

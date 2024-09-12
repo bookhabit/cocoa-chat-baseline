@@ -1,95 +1,132 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+"use client";
 
-export default function Home() {
-  return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="https://nextjs.org/icons/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol>
-          <li>
-            Get started by editing <code>app/page.tsx</code>.
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+import React, { FormEvent, useEffect, useState } from "react";
+import io, { Socket } from "socket.io-client";
 
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="https://nextjs.org/icons/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.secondary}
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className={styles.footer}>
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
-  );
+import styles from "./styles.module.scss";
+
+// user 정보
+interface UserType {
+  id: number | undefined;
+  name: string | undefined;
 }
+
+// 메시지 타입 정의
+interface ChatMessageType {
+  id?: number;
+  sender: UserType;
+  content: string;
+}
+
+// 소켓 연결 초기화
+// const socket: Socket = io("http://localhost:8080");
+
+const ChatPage: React.FC = () => {
+  const [userData, setUserData] = useState<UserType>();
+  const [userName, setUserName] = useState("");
+  const [messages, setMessages] = useState<ChatMessageType[]>([
+    {
+      id: 1,
+      content: "hi",
+      sender: {
+        id: 1,
+        name: "이현진",
+      },
+    },
+    {
+      id: 2,
+      content: "안녕",
+      sender: {
+        id: 2,
+        name: "김현태",
+      },
+    },
+  ]);
+  const [input, setInput] = useState<string>("");
+
+  // 서버에서 메시지 수신
+  useEffect(() => {
+    // socket.on("message", (message: ChatMessageType) => {
+    //   setMessages((prevMessages) => [...prevMessages, message]);
+    // });
+    // return () => {
+    //   socket.off("message");
+    // };
+  }, []);
+
+  // 메시지 보내기 함수
+  const sendMessage = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (input.trim()) {
+      const chatMessage: ChatMessageType = {
+        id: 3,
+        sender: {
+          id: userData?.id,
+          name: userData?.name,
+        },
+        content: input,
+      };
+
+      setMessages((prevMessages) => [...prevMessages, chatMessage]);
+
+      // socket.emit("chat.send", chatMessage);
+      setInput(""); // 메시지 전송 후 입력창 초기화
+    }
+  };
+
+  // 로그인
+  const handleLogin = () => {
+    setUserData({
+      id: 1,
+      name: userName,
+    });
+  };
+
+  return (
+    <>
+      {userData?.id ? (
+        <div className={styles.container}>
+          <div className={styles.chatBox}>
+            {messages.map((msg, index) =>
+              msg.sender.id === userData.id ? (
+                <div className={styles.sender} key={msg.id}>
+                  <p className={styles.chatMessage}>
+                    {msg.sender.name}: {msg.content}
+                  </p>
+                </div>
+              ) : (
+                <div className={styles.receiver} key={msg.id}>
+                  <p className={styles.chatMessage}>
+                    {msg.sender.name}: {msg.content}
+                  </p>
+                </div>
+              )
+            )}
+          </div>
+
+          <form className={styles.form} onSubmit={sendMessage}>
+            <div className={styles.inputBox}>
+              <input
+                type="text"
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                placeholder="메시지를 입력하세요"
+              />
+              <button disabled={!input}>전송</button>
+            </div>
+          </form>
+        </div>
+      ) : (
+        <div className={styles.loginContainer}>
+          <input
+            placeholder="이름"
+            onChange={(e) => setUserName(e.target.value)}
+          />
+          <button onClick={handleLogin}>로그인</button>
+        </div>
+      )}
+    </>
+  );
+};
+
+export default ChatPage;
