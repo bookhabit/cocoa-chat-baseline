@@ -1,0 +1,25 @@
+# Docker-compose for Chat microservices
+# author: sungil.byun<sungil.byun@sailab.net>
+# Sept. 2024
+#
+
+services:
+  front:
+    container_name: ${DC_NAME_WEB}
+    build:
+      context: ../front
+      dockerfile: Dockerfile
+    image: ${IMG_NAME_WEB}:${VERSION_NAME}
+    # restart: always
+    ports:
+      - 3000:3000
+  
+    networks:
+      - chatnet
+
+volumes:
+  jchat-vol: {}
+  jchat-config: {}
+  
+networks:
+  chatnet: {}
